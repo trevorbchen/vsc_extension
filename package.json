@@ -1,15 +1,210 @@
 {
   "name": "formal-verifier",
-  "displayName": "Formal Verifier",
-  "activationEvents": [
-    "onCommand:formalVerifier.run"
+  "displayName": "Formal Verifier for C",
+  "description": "Formal verification of C programs using ACSL annotations and verification tools",
+  "version": "0.2.0",
+  "publisher": "your-publisher",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Other"
   ],
+  "keywords": [
+    "formal verification",
+    "C",
+    "ACSL",
+    "static analysis",
+    "program verification"
+  ],
+  "activationEvents": [
+    "onLanguage:c",
+    "onCommand:formalVerifier.run",
+    "onCommand:formalVerifier.configure"
+  ],
+  "main": "./extension.js",
   "contributes": {
     "commands": [
       {
         "command": "formalVerifier.run",
-        "title": "Run Full Verification Pipeline"
+        "title": "Run Formal Verification",
+        "category": "Formal Verifier",
+        "icon": "$(check)"
+      },
+      {
+        "command": "formalVerifier.stop",
+        "title": "Stop Verification",
+        "category": "Formal Verifier",
+        "icon": "$(stop)"
+      },
+      {
+        "command": "formalVerifier.configure",
+        "title": "Configure Extension",
+        "category": "Formal Verifier",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "formalVerifier.showOutput",
+        "title": "Show Output",
+        "category": "Formal Verifier",
+        "icon": "$(output)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "formalVerifier.run",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorTextFocus && resourceExtname == .c"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceExtname == .c || resourceExtname == .h",
+          "command": "formalVerifier.run",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "resourceExtname == .c || resourceExtname == .h",
+          "command": "formalVerifier.run",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "formalVerifier.run",
+          "when": "resourceExtname == .c || resourceExtname == .h"
+        },
+        {
+          "command": "formalVerifier.stop"
+        },
+        {
+          "command": "formalVerifier.configure"
+        },
+        {
+          "command": "formalVerifier.showOutput"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Formal Verifier",
+      "properties": {
+        "formalVerifier.pythonPath": {
+          "type": "string",
+          "default": "python3",
+          "description": "Path to the Python executable used to run the verification backend"
+        },
+        "formalVerifier.autoSaveBeforeVerify": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically save the current file before running verification"
+        },
+        "formalVerifier.supportedExtensions": {
+          "type": "array",
+          "default": [".c", ".h"],
+          "description": "List of file extensions that can be verified",
+          "items": {
+            "type": "string"
+          }
+        },
+        "formalVerifier.showProgress": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show progress notifications during verification"
+        },
+        "formalVerifier.preserveTempFiles": {
+          "type": "boolean",
+          "default": false,
+          "description": "Keep temporary files after verification for debugging"
+        },
+        "formalVerifier.maxFileSize": {
+          "type": "number",
+          "default": 1048576,
+          "description": "Maximum file size in bytes for verification (default: 1MB)"
+        },
+        "formalVerifier.inlineDependencies": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include local header files in verification"
+        },
+        "formalVerifier.resultDisplayMode": {
+          "type": "string",
+          "enum": ["panel", "diagnostics", "both"],
+          "default": "both",
+          "description": "How to display verification results"
+        },
+        "formalVerifier.api.annotatorUrl": {
+          "type": "string",
+          "default": "http://localhost:8000/annotate",
+          "description": "URL for the annotation API service"
+        },
+        "formalVerifier.api.verifierUrl": {
+          "type": "string",
+          "default": "http://localhost:8001/verify",
+          "description": "URL for the verification API service"
+        },
+        "formalVerifier.api.timeout": {
+          "type": "number",
+          "default": 30,
+          "description": "API timeout in seconds"
+        },
+        "formalVerifier.api.authToken": {
+          "type": "string",
+          "default": "",
+          "description": "Authentication token for API services (if required)"
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "c",
+        "extensions": [".c", ".h"],
+        "aliases": ["C"]
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "formalverifier",
+        "owner": "formalverifier",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
       }
     ]
-  }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "echo 'No compilation needed for this extension'",
+    "watch": "echo 'No watch command needed'",
+    "pretest": "npm run compile",
+    "test": "node ./test/runTest.js",
+    "lint": "eslint .",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.60.0",
+    "@types/node": "14.x",
+    "eslint": "^7.32.0",
+    "vsce": "^2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/vscode-formal-verifier.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/vscode-formal-verifier/issues"
+  },
+  "homepage": "https://github.com/your-username/vscode-formal-verifier#readme"
 }

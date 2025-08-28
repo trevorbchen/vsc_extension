@@ -1,121 +1,179 @@
-# vsc_extension
----
+VS Code Formal Verifier Extension (Enhanced)
+A VS Code extension that integrates with external APIs to perform formal verification of C programs using ACSL annotations and tools like Frama-C.
 
-## 🚀 Usage
+🆕 What's New in v0.2.0
+This enhanced version addresses the key limitations identified in the original prototype:
 
-1. Open VS Code, and load this extension in `development mode`.
-2. Open any `.c` source file.
-3. Run the command **"Run Full Verification Pipeline"** from the Command Palette.
-4. The extension will:
-   - Grab the file content.
-   - Resolve dependencies.
-   - Send code to **API #1** (annotation).
-   - Send annotated version to **API #2** (verification).
-   - Show results inside VS Code.
+✅ Major Improvements
+🔧 Robust Configuration Management: JSON-based configuration with environment variable overrides
+🔗 Enhanced Dependency Resolution: Proper AST-level parsing and safe code merging
+📊 Progress Tracking: Real-time progress updates with stage-by-stage feedback
+🛠️ Better Error Handling: Comprehensive error reporting and graceful failure handling
+🧪 Test Suite: Comprehensive unit and integration tests
+🎯 VS Code Integration: Diagnostics, progress notifications, and better UI
+⚙️ Flexible Configuration: Configurable through VS Code settings and config files
+🚀 Quick Start
+Prerequisites
+VS Code 1.60.0 or higher
+Python 3.7+ with required dependencies
+C compiler (optional, for testing)
+Installation
+Clone the repository:
+bash
+git clone https://github.com/your-username/vscode-formal-verifier.git
+cd vscode-formal-verifier
+Install Python dependencies:
+bash
+pip install -r Requirements.txt
+Load in VS Code:
+Open VS Code
+Go to Extensions → Install from VSIX (or load in development mode)
+Open any .c file
+Use Ctrl+Shift+V or Command Palette → "Run Formal Verification"
+🎯 Usage
+Basic Verification
+Open a C source file in VS Code
+Press Ctrl+Shift+V (or Cmd+Shift+V on Mac)
+Watch the progress notification
+View results in the output panel or as diagnostics
+Command Line Usage
+The backend can also be used directly from the command line:
 
----
+bash
+# Basic verification
+python3 python/main.py main.c
 
-## ⚠️ Notes
+# JSON output for tooling integration
+python3 python/main.py main.c --json
 
-- APIs (`api/annotator.py` and `api/verifier.py`) are **stubs**. Replace them with actual calls once the APIs are ready.
-- Dependency resolution assumes external libraries are already verified. The `dependency.py` module currently just tracks which imports are internal vs external.
+# Show progress updates
+python3 python/main.py main.c --progress
 
-# VS Code Formal Verifier Extension (Prototype)
+# Run with custom project root
+python3 python/main.py main.c --project-root /path/to/project
 
-This project is a prototype of a **VS Code extension** that integrates with external APIs to perform **formal verification of C programs** using ACSL annotations and tools like **Frama-C**.
+# Show current configuration
+python3 python/main.py --config
 
----
+# Run self-tests
+python3 python/main.py --test
+Configuration
+VS Code Settings
+Configure through VS Code settings (Ctrl+, → Search "formalVerifier"):
 
-## ✅ Current Features
-
-- Reads the active file in VS Code.
-- Parses and classifies dependencies:
-  - Internal (`"myfile.h"`) → loaded and inlined into the verification pipeline.
-  - External (`<stdio.h>`) → ignored (assumed pre-verified).
-- Calls **Annotation API (API #1)** (currently stubbed).
-- Calls **Verification API (API #2)** (currently stubbed).
-- Saves annotated code to a temporary file for debugging.
-- Displays verification results back to the user (simple formatted text).
-
-This project is **not production-ready**. Key gaps include:
-
-### 1. **API Integration**
-- **Annotator API (#1):**
-  - Currently just returns `"/* ACSL annotations here */" + code`.
-  - Needs actual implementation once the annotation service is available.
-  - Open question: Will this be a REST API, local binary, or another service?
-- **Verifier API (#2):**
-  - Currently returns a hardcoded failure message.
-  - Needs actual integration with Frama-C or chosen verification backend.
-  - Define expected response schema (e.g., JSON `{ verified: bool, errors: [str] }`).
-
----
-
-### 2. **Dependency Handling**
-- Current implementation:
-  - Extracts `#include` lines.
-  - Splits into "internal" (in-project `.h` files) and "external" (assumed verified).
-  - Naively inlines internal file contents into one blob of code.
-- Issues:
-  - This may cause double definitions if multiple files define the same function.
-  - No AST-level merging → could break in complex projects.
-- Future improvements:
-  - Use `pycparser` to properly parse and merge C files.
-  - Track dependency graphs across multiple files instead of naive concatenation.
-  - Cache already-verified internal modules.
-
----
-
-### 3. **Error Reporting & UI**
-- Currently results are printed as plain text to VS Code.
-- Needs:
-  - Diagnostics integration (red squiggles under failing lines).
-  - A webview or custom panel for structured results.
-  - Clear mapping from verification errors → source code locations.
-
----
-
-### 4. **Config & Flexibility**
-- API endpoints are hardcoded placeholders.
-- Should move to:
-  - `settings.json` → configurable endpoints.
-  - Environment variables for auth tokens, etc.
-- User should be able to toggle:
-  - Whether dependencies are inlined or skipped.
-  - Whether temporary files are preserved for debugging.
-
----
-
-### 5. **Testing & Reliability**
-- No automated tests yet.
-- Next steps:
-  - Unit tests for `dependency.py`.
-  - Mock APIs for `annotator` and `verifier`.
-  - Integration test: run pipeline on a simple C file and assert expected verification output.
-
----
-
-## 🚀 Next Steps
-
-1. Define the **real APIs** (spec: input/output format, REST vs CLI, error cases).
-2. Replace `annotator.py` and `verifier.py` stubs with actual implementations.
-3. Improve dependency handling:
-   - Start with project-local `.h` files.
-   - Move toward AST-level parsing with `pycparser`.
-4. Enhance VS Code UI:
-   - Use diagnostics to highlight failed verification lines.
-   - Add status bar feedback (`Verifying… ✅/❌`).
-5. Add tests and CI.
-
----
-
-## 🛠 Example Run (Current State)
-
-C file `main.c`:
-```c
-#include <stdio.h>
-#include "math_utils.h"
-
-int main() {
-    return add(2, 3);
+json
+{
+  "formalVerifier.pythonPath": "python3",
+  "formalVerifier.autoSaveBeforeVerify": true,
+  "formalVerifier.inlineDependencies": true,
+  "formalVerifier.resultDisplayMode": "both",
+  "formalVerifier.api.annotatorUrl": "http://localhost:8000/annotate",
+  "formalVerifier.api.verifierUrl": "http://localhost:8001/verify",
+  "formalVerifier.api.timeout": 30
 }
+Project Configuration
+Create .formalverifier.json in your project root:
+
+json
+{
+  "api": {
+    "annotator_url": "http://localhost:8000/annotate",
+    "verifier_url": "http://localhost:8001/verify",
+    "timeout": 30,
+    "auth_token": "your-token-here"
+  },
+  "verification": {
+    "inline_dependencies": true,
+    "preserve_temp_files": false,
+    "max_file_size": 1048576,
+    "supported_extensions": [".c", ".h"]
+  },
+  "ui": {
+    "show_progress": true,
+    "auto_save_before_verify": true,
+    "result_display_mode": "both"
+  }
+}
+Environment Variables
+Override configuration with environment variables:
+
+bash
+export FORMALVERIFIER_ANNOTATOR_URL="http://remote-api:8000/annotate"
+export FORMALVERIFIER_VERIFIER_URL="http://remote-api:8001/verify"
+export FORMALVERIFIER_AUTH_TOKEN="your-secret-token"
+export FORMALVERIFIER_TIMEOUT="60"
+🏗️ Architecture
+Components Overview
+├── extension.js                 # VS Code extension frontend
+├── package.json                # Extension manifest with configuration schema
+├── python/
+│   ├── main.py                 # Enhanced CLI entry point
+│   ├── enhanced_pipeline.py    # Core verification pipeline
+│   ├── config_manager.py       # Configuration management
+│   ├── utils/
+│   │   ├── enhanced_dependency.py  # Advanced dependency resolution
+│   │   └── file_handler.py     # File operations
+│   ├── api/
+│   │   ├── annotator.py        # Annotation API client
+│   │   └── verifier.py         # Verification API client
+│   └── ui/
+│       └── results.py          # Result formatting
+└── test_suite.py              # Comprehensive tests
+Pipeline Stages
+The verification pipeline consists of 6 stages:
+
+Initialization: Input validation and setup
+Dependency Resolution: Parse and classify #include statements
+Code Merging: Safely combine source files with dependency resolution
+Annotation: Add ACSL annotations via API #1
+Verification: Run formal verification via API #2
+Result Formatting: Process and format results for display
+Enhanced Dependency Resolution
+The new dependency system:
+
+Parses include statements with proper C preprocessor semantics
+Builds dependency graphs to handle complex project structures
+Safely merges code with include guards and duplicate prevention
+Handles circular dependencies gracefully
+Supports nested includes and relative paths
+🛠️ Development
+Running Tests
+bash
+# Run all tests
+python3 python/test_suite.py
+
+# Run specific test class
+python3 -m unittest test_suite.TestDependencyResolution
+
+# Run with verbose output
+python3 python/test_suite.py --verbose
+API Implementation
+The system is designed to work with two APIs:
+
+Annotation API (API #1)
+python
+# Expected interface
+def annotate_code(source_code: str) -> str:
+    """Add ACSL annotations to C source code."""
+    # Return annotated code
+Verification API (API #2)
+python
+# Expected interface
+def verify_code(annotated_code: str) -> dict:
+    """Verify annotated C code."""
+    # Return: {"verified": bool, "errors": [str]}
+Implementing Real APIs
+Replace the stubs in python/api/ with actual implementations:
+
+REST API Client:
+python
+import requests
+from config_manager import get_config
+
+def annotate_code(source_code: str) -> str:
+    config = get_config()
+    response = requests.post(
+        config.api.annotator_url,
+        json={"code": source_code},
+        timeout=config.api.timeout,
+        headers={"Authorization": f"Bearer {config.api.auth_
