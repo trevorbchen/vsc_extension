@@ -1,0 +1,15 @@
+{
+  "name": "formal-verifier",
+  "displayName": "Formal Verifier",
+  "activationEvents": [
+    "onCommand:formalVerifier.run"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "formalVerifier.run",
+        "title": "Run Full Verification Pipeline"
+      }
+    ]
+  }
+}
